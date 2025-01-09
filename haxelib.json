@@ -1,10 +1,14 @@
 {
 	"name": "xing",
-	"url": "https://github.com/nevergarden/xing",
+	"url": "https://github.com/aemorax/xing",
 	"license": "MIT",
-	"contributors": ["nevergarden"],
+	"contributors": [
+		"aemorax"
+	],
 	"description": "Hashlink Web Framework",
 	"version": "1.0.0",
 	"releasenote": "",
-	"dependencies": {"hlpicohttp": "1.0.0"}
+	"dependencies": {
+		"hlpicohttp": "1.0.0"
+	}
 }
