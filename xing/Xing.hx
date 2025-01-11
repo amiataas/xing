@@ -1,22 +1,21 @@
 package xing;
 
-import haxe.ds.GenericStack;
-import sys.io.File;
-import sys.FileSystem;
-import xing.request.Request;
-import xing.response.Response;
 import haxe.Exception;
-import picohttp.PicoHttpParser;
-import picohttp.PicoHttpParser.ParsedRequest;
-import xing.core.System;
-import sys.thread.FixedThreadPool;
-import xing.core.PriorityClientSocket;
+import haxe.ds.GenericStack;
+import sys.FileSystem;
+import sys.io.File;
 import sys.net.Host;
 import sys.net.Socket;
+import sys.thread.FixedThreadPool;
 import sys.thread.IThreadPool;
+import xing.core.PriorityClientSocket;
+import xing.core.System;
+import xing.request.Request;
+import xing.request.RequestParser;
+import xing.response.Response;
 
 class Xing {
-	private var cores : Int = 0;
+	private var cores:Int = 0;
 	private var applicationThreads:IThreadPool;
 	private var backlog:Array<PriorityClientSocket> = [];
 	private var routes:Map<String, Request->Response->Void>;
@@ -34,17 +33,17 @@ class Xing {
 
 	public function serveStatic(path:String, directory:String) {
 		var laters:GenericStack<String> = new GenericStack<String>();
-		var currentPath : String;
-		if(FileSystem.isDirectory(directory)) {
+		var currentPath:String;
+		if (FileSystem.isDirectory(directory)) {
 			var current = FileSystem.readDirectory(directory);
-			for(each in current) {
+			for (each in current) {
 				currentPath = directory + "/" + each;
-				if(FileSystem.isDirectory(currentPath))
+				if (FileSystem.isDirectory(currentPath))
 					laters.add(each);
 				else
 					serveFile(path + "/" + each, currentPath);
 			}
-			while(!laters.isEmpty()) {
+			while (!laters.isEmpty()) {
 				currentPath = laters.pop();
 				serveStatic(path + "/" + currentPath, directory + "/" + currentPath);
 			}
@@ -52,14 +51,13 @@ class Xing {
 	}
 
 	public function serveFile(path:String, filePath:String) {
-		trace(path + ":" + filePath);
-		var fileContent : haxe.io.Bytes = null;
-		if(FileSystem.exists(filePath)) {
+		var fileContent:haxe.io.Bytes = null;
+		if (FileSystem.exists(filePath)) {
 			fileContent = File.getBytes(filePath);
 		}
 
 		routes.set(path, function(req, res) {
-			if(fileContent != null) {
+			if (fileContent != null) {
 				res.setBytes(fileContent);
 			} else {
 				res.setBody("");
@@ -68,7 +66,7 @@ class Xing {
 		});
 	}
 
-	public function listen(?host:String="0.0.0.0", ?ports:Array<Int> = null) {
+	public function listen(?host:String = "0.0.0.0", ?ports:Array<Int> = null) {
 		if (ports == null)
 			ports = [3000];
 
@@ -91,7 +89,7 @@ class Xing {
 			var workerSocket = new Socket();
 			workerSocket.bind(host, port);
 			workerSocket.listen(1024);
-			var workerClientHandlerThread:IThreadPool = new FixedThreadPool(this.cores*25);
+			var workerClientHandlerThread:IThreadPool = new FixedThreadPool(this.cores * 25);
 
 			while (true) {
 				var client = workerSocket.accept();
@@ -112,8 +110,8 @@ class Xing {
 			client.pending = true;
 			try {
 				var req = parseRequest(client.socket.input);
-				if(routes.exists(req.request.path)) {
-					routes.get(req.request.path)(Request.fromParsedRequest(req.request, req.body, req.rawRequest), Response.fromOutput(client.socket.output));
+				if (routes.exists(req.path)) {
+					routes.get(req.path)(req, Response.fromOutput(client.socket.output));
 				} else {
 					Response.notFound(client.socket.output);
 				}
@@ -121,38 +119,15 @@ class Xing {
 				client.socket.close();
 				client.pending = false;
 				client.done = true;
-			} catch(e:Exception) {
+			} catch (e:Exception) {
 				client.pending = false;
 				client.done = true;
 			}
 		}
 	}
 
-	private function parseRequest(input:haxe.io.Input):{body:haxe.io.Bytes, rawRequest:String, request:ParsedRequest} {
-		var reqString:String = "";
-		while (true) {
-			try {
-				var res = input.readLine();
-				reqString += '${res}\r\n';
-				if (res == "") {
-					break;
-				}
-			} catch (e:Any) {
-				break;
-			}
-		}
-		var parsedReq = PicoHttpParser.parseRequest(reqString);
-		var cLen = parsedReq.headers.get("Content-Length");
-		var body : haxe.io.Bytes = null;
-		if(cLen != null) {
-			body = haxe.io.Bytes.alloc(Std.parseInt(cLen));
-			input.readBytes(body, 0, Std.parseInt(cLen));
-		}
-
-		return {
-			rawRequest: reqString,
-			body: body,
-			request: parsedReq
-		};
+	private function parseRequest(input:haxe.io.Input):Request {
+		var request = RequestParser.requestFromInput(input);
+		return new Request(request);
 	}
 }
