@@ -1,9 +1,9 @@
 {
 	"name": "xing",
-	"url": "https://github.com/aemorax/xing",
+	"url": "https://github.com/amiataas/xing",
 	"license": "MIT",
 	"contributors": [
-		"aemorax"
+		"amiataas"
 	],
 	"description": "Hashlink Web Framework",
 	"version": "1.1.0",

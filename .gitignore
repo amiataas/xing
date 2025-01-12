@@ -1,4 +1,2 @@
 /node_modules
 /out
-#: this should be defined by the user to hashlink/other/haxelib
-/haxe_libraries/hashlink.hxml
