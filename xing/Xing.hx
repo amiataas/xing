@@ -14,12 +14,27 @@ import xing.request.Request;
 import xing.request.RequestParser;
 import xing.response.Response;
 
+/**
+	Base framework runner application.
+
+	```haxe
+	final x = new Xing();
+	x.registerRoute("/", function(req, res) {
+		res.setBody("Hello World");
+		res.send();
+	});
+	x.listen("0.0.0.0", [8000]);
+	```
+**/
 class Xing {
 	private var cores:Int = 0;
 	private var applicationThreads:IThreadPool;
 	private var backlog:Array<PriorityClientSocket> = [];
 	private var routes:Map<String, Request->Response->Void>;
 
+	/**
+		Constructor
+	**/
 	public function new() {
 		this.cores = System.getProcessorCores();
 		if (this.cores < 0)
@@ -27,10 +42,28 @@ class Xing {
 		this.routes = new Map<String, Request->Response->Void>();
 	}
 
+	/**
+		Registers a new route for a callback.
+
+		```haxe
+		x.registerRoute("/", (req, res)-> {
+			if(req.method == "GET") {
+				req.send("Hello Xing!");
+			}
+		});
+		```
+	**/
 	public function registerRoute(path:String, callback:Request->Response->Void) {
 		routes.set(path, callback);
 	}
 
+	/**
+		Serves given `directory` at given `path`.
+		```haxe
+		// Serve directory dist at /static path.
+		x.serveStatic("static", "dist");
+		```
+	**/
 	public function serveStatic(path:String, directory:String) {
 		var laters:GenericStack<String> = new GenericStack<String>();
 		var currentPath:String;
@@ -50,6 +83,13 @@ class Xing {
 		}
 	}
 
+	/**
+		Serves a file at given `filePath` at `path`.
+		```haxe
+		// Serve file dist/css/styles.css at /css/styles.css path.
+		x.serveStatic("css/styles.css", "dist/css/styles.css");
+		```
+	**/
 	public function serveFile(path:String, filePath:String) {
 		var fileContent:haxe.io.Bytes = null;
 		if (FileSystem.exists(filePath)) {
@@ -66,29 +106,41 @@ class Xing {
 		});
 	}
 
-	public function listen(?host:String = "0.0.0.0", ?ports:Array<Int> = null) {
+	/**
+		Starts listening on given `host` on multiple `ports`, and callback when listening.
+
+		```haxe
+		x.listen("0.0.0.0", [8000, 8001], function() {
+			Sys.println('Listening on 0.0.0.0:${ports}');
+		});
+		```
+	**/
+	public function listen(?host:String = "0.0.0.0", ?ports:Array<Int> = null, ?callback:Void->Void) {
 		if (ports == null)
 			ports = [3000];
 
 		var nativeHost:Host = new Host(host);
 
 		if (ports.length == 1) {
-			applicationThreadHandler(nativeHost, ports[0])();
+			applicationThreadHandler(nativeHost, ports[0], callback)();
 		} else {
 			this.applicationThreads = new FixedThreadPool(ports.length - 1);
 			var lastPort = ports.pop();
 			for (port in ports) {
-				this.applicationThreads.run(applicationThreadHandler(nativeHost, port));
+				this.applicationThreads.run(applicationThreadHandler(nativeHost, port, callback));
 			}
-			applicationThreadHandler(nativeHost, lastPort)();
+			applicationThreadHandler(nativeHost, lastPort, callback)();
 		}
 	}
 
-	private function applicationThreadHandler(host:Host, port:Int) {
+	private function applicationThreadHandler(host:Host, port:Int, ?callback:Void->Void) {
 		return function() {
 			var workerSocket = new Socket();
 			workerSocket.bind(host, port);
 			workerSocket.listen(1024);
+			if(callback != null) {
+				callback();
+			} 
 			var workerClientHandlerThread:IThreadPool = new FixedThreadPool(this.cores * 25);
 
 			while (true) {

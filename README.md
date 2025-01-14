@@ -1,5 +1,5 @@
 # Xing
-A web framework for [Hashlink](https://hashlink.haxe.org/).
+A web framework for Haxe.
 
 ```haxe
 package;

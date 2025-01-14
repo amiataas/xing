@@ -1,0 +1,1 @@
+--cmd "haxelib run dox -i bin -o docs -in '^xing'"
