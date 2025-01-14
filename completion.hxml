@@ -1,4 +1,3 @@
---library hlpicohttp
 --macro include("xing", true)
---hl output.hl
+--neko bin/xing.n
 --no-output

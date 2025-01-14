@@ -5,19 +5,33 @@ import haxe.ds.ReadOnlyArray;
 import xing.template.XingCode.Address;
 
 class XingIRVirtualMachine {
-	private final context:Map<String, Dynamic>;
+	public var output(get, null):String = "";
+	
 	private final ir:ReadOnlyArray<XingCode>;
+	private var context:Context;
 	private var accum:Dynamic = 0; // Accumulator
 	private var r1:Dynamic = 0; // reg1
 	private var r2:Dynamic = 0; // reg2
 	private var pos:Int = 0;
 
-	public function new(context:Map<String, Dynamic>, ir:ReadOnlyArray<XingCode>) {
-		this.context = context;
+	public function new(ir:ReadOnlyArray<XingCode>) {
 		this.ir = ir;
 	}
 
-	public function generateTemplate():String {
+	public function switchContext(context:Context) {
+		this.context = context;
+		this.accum = 0;
+		this.r1 = 0;
+		this.r2 = 0;
+		this.pos = 0;
+		this.output = this.generateTemplate();
+	}
+
+	private function get_output():String {
+		return this.output;
+	}
+
+	private function generateTemplate():String {
 		var t = "";
 
 		var code:XingCode = {opcode: NOP}

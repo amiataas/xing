@@ -58,7 +58,8 @@ class Parser {
 			return block();
 		}
 		if (match(TDoc)) {
-			return docStatement();
+			var s = docStatement();
+			return s;
 		}
 		
 		return expressionStatement();
@@ -289,7 +290,8 @@ class Parser {
 		}
 
 		if (match(TID)) {
-			return postfix_unary_expression(new VariableExpression(advance()));
+			var v = postfix_unary_expression(new VariableExpression(advance()));
+			return v;
 		}
 
 		throw new ParserException("Unknown value as primary.");
@@ -304,8 +306,7 @@ class Parser {
 	}
 
 	private inline function advance():Token {
-		if (!eof())
-			current++;
+		current++;
 		return peek(-1);
 	}
 

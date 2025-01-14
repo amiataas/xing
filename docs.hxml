@@ -1,0 +1,13 @@
+--define doc-gen
+--macro include("xing", true)
+--no-output
+--each
+
+--xml bin/neko.xml
+--neko bin/xing.n
+
+--next
+
+--library hxjava
+--xml bin/java.xml
+--jvm bin/xing.jar

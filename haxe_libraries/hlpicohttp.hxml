@@ -1,3 +1,0 @@
-# @install: lix --silent download "gh://github.com/nevergarden/hlphttp#315a5f173b77a5cb739d27d36d454dfc6f812760" into hlpicohttp/1.0.0/github/315a5f173b77a5cb739d27d36d454dfc6f812760
--cp ${HAXE_LIBCACHE}/hlpicohttp/1.0.0/github/315a5f173b77a5cb739d27d36d454dfc6f812760/
--D hlpicohttp=1.0.0

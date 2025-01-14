@@ -1,5 +1,5 @@
 # Xing
-A web framework for [Hashlink](https://hashlink.haxe.org/).
+A web framework for Haxe.
 
 ```haxe
 package;
@@ -18,10 +18,8 @@ class Main {
 }
 ```
 ## Installation
-This [Haxe](https://haxe.org/) library depends on [Hashlink PicoHTTP](https://github.com/nevergarden/hlphttp) module, so please install that before installing this.
-
 To install `Xing` use:
-`haxelib git xing https://github.com/nevergarden/xing`.
+`haxelib git xing https://github.com/amiataas/xing`.
 
 ## Features
 * Routing

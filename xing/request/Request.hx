@@ -1,6 +1,6 @@
 package xing.request;
 
-import picohttp.PicoHttpParser.ParsedRequest;
+import xing.request.RequestParser.RequestType;
 
 class Request {
 	public var method:RequestMethod;
@@ -9,19 +9,22 @@ class Request {
 	@:isVar
 	public var cookies(get, null):Map<String, String>;
 	public var headers(default, null):Map<String, String>;
-	public var raw:String;
 
-	function new(method:RequestMethod, path:String, headers:Map<String, String>, raw:String, ?body:haxe.io.Bytes = null) {
-		this.method = method;
-		this.body = body;
-		this.path = path;
-		this.headers = headers;
+	public function new(request:RequestType) {
+		this.method = request.method;
+		this.path = request.uri;
+		this.headers = request.headers;
+		this.body = request.body;
+		this.cookies = this.get_cookies();
 	}
 
 	function get_cookies():Map<String, String> {
 		if (this.cookies == null) {
 			this.cookies = new Map<String, String>();
 			var cs = this.headers.get("Cookie");
+			if(cs == null) {
+				return this.cookies;
+			}
 			var cookies = cs.split(";");
 			var temp:Array<String>;
 			for (cookie in cookies) {
@@ -31,9 +34,5 @@ class Request {
 		}
 
 		return this.cookies;
-	}
-
-	public static function fromParsedRequest(parsedRequest:ParsedRequest, body:haxe.io.Bytes, rawString:String):Request {
-		return new Request(parsedRequest.method, parsedRequest.path, parsedRequest.headers, rawString, body);
 	}
 }

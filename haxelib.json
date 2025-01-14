@@ -1,10 +1,12 @@
 {
 	"name": "xing",
-	"url": "https://github.com/nevergarden/xing",
+	"url": "https://github.com/amiataas/xing",
 	"license": "MIT",
-	"contributors": ["nevergarden"],
+	"contributors": [
+		"amiataas"
+	],
 	"description": "Hashlink Web Framework",
-	"version": "1.0.0",
-	"releasenote": "",
-	"dependencies": {"hlpicohttp": "1.0.0"}
+	"version": "1.1.0",
+	"releasenote": "Added standalone request parser.",
+	"dependencies": {}
 }
